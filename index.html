@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astemir | Voice Commander</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.8s ease; /* Плавная смена цветов */
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Эффект звездного неба */
+        #stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+            background: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px);
+            background-size: 550px 550px, 350px 350px;
+            background-position: 0 0, 40px 60px;
+            animation: move-stars 100s linear infinite;
+        }
+
+        @keyframes move-stars {
+            from { background-position: 0 0, 40px 60px; }
+            to { background-position: 1000px 500px, 1040px 560px; }
+        }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+            background: rgba(30, 41, 59, 0.6);
+            padding: 30px;
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Пульсирующий индикатор записи */
+        .mic-status {
+            width: 80px;
+            height: 80px;
+            background: #ef4444;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .mic-status.active {
+            background: #10b981;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-active 1.8s infinite;
+        }
+
+        @keyframes pulse-active {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .output {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 15px;
+            border-radius: 12px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .command-list {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-align: left;
+            line-height: 1.6;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+
+        .command-list span {
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        /* Неоновое приветствие */
+        #greeting {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #38bdf8;
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+            margin-top: 20px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #greeting.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .btn-start {
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="stars"></div>
+
+    <div class="container">
+        <div class="mic-status" id="micIndicator">🎤</div>
+        <h1 id="headerTitle">ГОЛОСОВОЙ ПУЛЬТ</h1>
+        <button class="btn-start" id="startBtn">Включить микрофон</button>
+        
+        <div class="output" id="speechOutput">Нажми кнопку выше и начни говорить...</div>
+        
+        <div id="greeting">ПРИВЕТ, СОЗДАТЕЛЬ!</div>
+
+        <div class="command-list">
+            <p><strong>Доступные команды в петличку:</strong></p>
+            <p>🎨 Цвета: <span>«красный»</span>, <span>«синий»</span>, <span>«зеленый»</span>, <span>«черный»</span></p>
+            <p>🌌 Космос: <span>«космос»</span> (вкл/выкл звезды)</p>
+            <p>👤 Имя создателя: <span>«Астемир»</span></p>
+            <p>🔄 Сброс: <span>«сбросить»</span></p>
+        </div>
+    </div>
+
+    <script>
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+            alert("К сожалению, твой мобильный браузер не поддерживает распознавание речи. Попробуй Chrome или Safari!");
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'ru-RU';
+            recognition.interimResults = false; // Ждем окончания фразы
+            recognition.maxAlternatives = 1;
+
+            const startBtn = document.getElementById('startBtn');
+            const micIndicator = document.getElementById('micIndicator');
+            const speechOutput = document.getElementById('speechOutput');
+            const greeting = document.getElementById('greeting');
+            const stars = document.getElementById('stars');
+            let isRecognizing = false;
+
+            // Запуск/остановка распознавания
+            startBtn.addEventListener('click', () => {
+                if (!isRecognizing) {
+                    recognition.start();
+                } else {
+                    recognition.stop();
+                }
+            });
+
+            recognition.onstart = () => {
+                isRecognizing = true;
+                startBtn.innerText = "Микрофон активен";
+                startBtn.style.background = "#10b981";
+                micIndicator.classList.add('active');
+                speechOutput.innerText = "Слушаю петличку...";
+            };
+
+            recognition.onend = () => {
+                isRecognizing = false;
+                startBtn.innerText = "Включить микрофон";
+                startBtn.style.background = "#38bdf8";
+                micIndicator.classList.remove('active');
+                // Автоматический перезапуск, чтобы микрофон не отключался
+                recognition.start();
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Ошибка распознавания: ", event.error);
+                if (event.error === 'not-allowed') {
+                    speechOutput.innerText = "Разреши доступ к микрофону!";
+                }
+            };
+
+            // Обработка расшифрованного текста
+            recognition.onresult = (event) => {
+                const resultText = event.results[0][0].transcript.toLowerCase().trim();
+                speechOutput.innerText = `Ты сказал: "${resultText}"`;
+
+                // ЛОГИКА КОМАНД
+                if (resultText.includes('красный')) {
+                    document.body.style.backgroundColor = '#7f1d1d';
+                    greeting.classList.remove('show');
+                } 
+                else if (resultText.includes('синий')) {
+                    document.body.style.backgroundColor = '#1e3a8a';
+                    greeting.classList.remove('show');
+                } 
+                else if (resultText.includes('зеленый') || resultText.includes('зелёный')) {
+                    document.body.style.backgroundColor = '#064e3b';
+                    greeting.classList.remove('show');
+                } 
+                else if (resultText.includes('черный') || resultText.includes('чёрный')) {
+                    document.body.style.backgroundColor = '#020617';
+                    greeting.classList.remove('show');
+                } 
+                else if (resultText.includes('космос')) {
+                    if (stars.style.opacity == '1') {
+                        stars.style.opacity = '0';
+                    } else {
+                        stars.style.opacity = '1';
+                        document.body.style.backgroundColor = '#020617';
+                    }
+                } 
+                else if (resultText.includes('астемир')) {
+                    greeting.classList.add('show');
+                    // Добавим звуковой эффект подтверждения прямо в телефоне
+                    if (window.speechSynthesis) {
+                        const utterance = new SpeechSynthesisUtterance("Приветствую тебя, Астемир!");
+                        utterance.lang = "ru-RU";
+                        window.speechSynthesis.speak(utterance);
+                    }
+                } 
+                else if (resultText.includes('сбросить') || resultText.includes('назад')) {
+                    document.body.style.backgroundColor = '#0b0f19';
+                    stars.style.opacity = '0';
+                    greeting.classList.remove('show');
+                }
+            };
+        }
+    </script>
+</body>
+</html>
