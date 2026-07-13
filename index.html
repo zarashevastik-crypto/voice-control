@@ -21,12 +21,11 @@
             justify-content: center;
             min-height: 100vh;
             padding: 20px;
-            transition: background 0.8s ease; /* Плавная смена цветов */
+            transition: background 0.8s ease;
             overflow: hidden;
             position: relative;
         }
 
-        /* Эффект звездного неба */
         #stars {
             position: absolute;
             top: 0;
@@ -61,7 +60,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Пульсирующий индикатор записи */
         .mic-status {
             width: 80px;
             height: 80px;
@@ -129,7 +127,6 @@
             font-weight: bold;
         }
 
-        /* Неоновое приветствие */
         #greeting {
             font-size: 2rem;
             font-weight: bold;
@@ -189,7 +186,7 @@
         } else {
             const recognition = new SpeechRecognition();
             recognition.lang = 'ru-RU';
-            recognition.interimResults = false; // Ждем окончания фразы
+            recognition.interimResults = false;
             recognition.maxAlternatives = 1;
 
             const startBtn = document.getElementById('startBtn');
@@ -199,7 +196,6 @@
             const stars = document.getElementById('stars');
             let isRecognizing = false;
 
-            // Запуск/остановка распознавания
             startBtn.addEventListener('click', () => {
                 if (!isRecognizing) {
                     recognition.start();
@@ -221,8 +217,6 @@
                 startBtn.innerText = "Включить микрофон";
                 startBtn.style.background = "#38bdf8";
                 micIndicator.classList.remove('active');
-                // Автоматический перезапуск, чтобы микрофон не отключался
-                recognition.start();
             };
 
             recognition.onerror = (event) => {
@@ -232,12 +226,10 @@
                 }
             };
 
-            // Обработка расшифрованного текста
             recognition.onresult = (event) => {
                 const resultText = event.results[0][0].transcript.toLowerCase().trim();
                 speechOutput.innerText = `Ты сказал: "${resultText}"`;
 
-                // ЛОГИКА КОМАНД
                 if (resultText.includes('красный')) {
                     document.body.style.backgroundColor = '#7f1d1d';
                     greeting.classList.remove('show');
@@ -264,7 +256,6 @@
                 } 
                 else if (resultText.includes('астемир')) {
                     greeting.classList.add('show');
-                    // Добавим звуковой эффект подтверждения прямо в телефоне
                     if (window.speechSynthesis) {
                         const utterance = new SpeechSynthesisUtterance("Приветствую тебя, Астемир!");
                         utterance.lang = "ru-RU";
